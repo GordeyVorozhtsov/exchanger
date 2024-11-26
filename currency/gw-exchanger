@@ -1,0 +1,116 @@
+package main
+
+import (
+	"database/sql"
+	"fmt"
+
+	_ "github.com/lib/pq"
+)
+
+var db *sql.DB
+
+func initDB() {
+	var err error
+	//connStr := "user=fucku dbname=wallet sslmode=disable"
+	db, err = sql.Open("postgres", "user=fucku dbname=currencies sslmode=disable")
+	if err != nil {
+		panic(err)
+	}
+}
+
+// взять данные из бд
+func getRUB(val string, balance float64) float64 {
+	var newBalance float64
+	switch val {
+	case "USD":
+		err := db.QueryRow("SELECT rate FROM currencies WHERE code = 'rub/usd'").Scan(&newBalance)
+		if err == sql.ErrNoRows {
+			fmt.Println("db error")
+			return 0
+		}
+		if err != nil {
+			fmt.Println("go error")
+			return 0
+		}
+
+	case "EUR":
+		err := db.QueryRow("SELECT rate FROM currencies WHERE code = 'rub/eur'").Scan(&newBalance)
+		if err == sql.ErrNoRows {
+			fmt.Println("db error")
+			return 0
+		}
+		if err != nil {
+			fmt.Println("go error")
+			return 0
+		}
+	}
+	return (balance * newBalance)
+}
+func getUSD(val string, balance float64) float64 {
+	var newBalance float64
+	switch val {
+	case "RUB":
+		err := db.QueryRow("SELECT rate FROM currencies WHERE code = 'usd/rub'").Scan(&newBalance)
+		if err == sql.ErrNoRows {
+			fmt.Println("db error")
+			return 0
+		}
+		if err != nil {
+			fmt.Println("go error")
+			return 0
+		}
+
+	case "EUR":
+		err := db.QueryRow("SELECT rate FROM currencies WHERE code = 'usd/eur'").Scan(&newBalance)
+		if err == sql.ErrNoRows {
+			fmt.Println("db error")
+			return 0
+		}
+		if err != nil {
+			fmt.Println("go error")
+			return 0
+		}
+
+	}
+	return (balance * newBalance)
+}
+func getEUR(val string, balance float64) float64 {
+	var newBalance float64
+	switch val {
+	case "USD":
+		err := db.QueryRow("SELECT rate FROM currencies WHERE code = 'eur/usd'").Scan(&newBalance)
+		if err == sql.ErrNoRows {
+			fmt.Println("db error")
+			return 0
+		}
+		if err != nil {
+			fmt.Println("go error")
+			return 0
+		}
+
+	case "RUB":
+		err := db.QueryRow("SELECT rate FROM currencies WHERE code = 'eur/rub'").Scan(&newBalance)
+		if err == sql.ErrNoRows {
+			fmt.Println("db error")
+			return 0
+		}
+		if err != nil {
+			fmt.Println("go error")
+			return 0
+		}
+
+	}
+	return (balance * newBalance)
+}
+func main() {
+	initDB()
+	defer db.Close()
+	fmt.Printf("%.4f\n", getRUB("USD", 15000.0))
+	fmt.Printf("%.4f\n", getRUB("EUR", 15000.0))
+	fmt.Printf("%.4f\n", getUSD("RUB", 15000.0))
+	//fmt.Println(getUSD("RUB", 15000.0))
+	fmt.Printf("%.4f\n", getUSD("EUR", 15000.0))
+	fmt.Printf("%.4f\n", getEUR("RUB", 15000.0))
+	fmt.Printf("%.4f\n", getEUR("USD", 15000.0))
+	fmt.Println("Это программа для обмена валют")
+}
